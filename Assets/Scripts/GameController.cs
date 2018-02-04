@@ -7,8 +7,8 @@ using UnityEngine.SceneManagement;
 public class GameController : MonoBehaviour {
 	private GameObject avian;
 	public GameObject popup;
-	public GameObject instructions;
 	private PlayerController playerController;
+	public GameObject cancelBtn;
 	public Text forceText;
 	public Text scoreText;
 	public Text popupScoreText;
@@ -16,15 +16,19 @@ public class GameController : MonoBehaviour {
 	public bool inputEnabled;
 	// Use this for initialization
 	void Start () {
+		Time.timeScale = 1;
 		gameOver = false;
 		avian = GameObject.Find("Avian");
 		playerController = avian.GetComponent<PlayerController>();
-		inputEnabled = false;
-		Time.timeScale = 0;
+		inputEnabled = true;
 	}
 	
 	void Update () {
 		if (!gameOver) {
+			if (Input.GetKey (KeyCode.Escape)) {
+				OnGameOver (true);
+			}
+
 			if (playerController.delay > 100 && 
 				playerController.launched && 
 				avian.GetComponent<Rigidbody2D>().velocity.sqrMagnitude <= 0.0) {
@@ -39,20 +43,19 @@ public class GameController : MonoBehaviour {
 		}
 	}
 
-	private void OnGameOver() {
+	private void OnGameOver(bool isUserCalled = false) {
 		popup.SetActive(true);
 		Time.timeScale = 0;
 		inputEnabled = false;
-		gameOver = true;
 		popupScoreText.text = "Your score: " + playerController.score.ToString();
+		if (isUserCalled)
+			cancelBtn.SetActive(true);
+		else {
+			cancelBtn.SetActive(false);
+			gameOver = true;
+		}
 	}
-	public void OnStart() {
-		inputEnabled = true;
 
-		Time.timeScale = 1;
-		instructions.SetActive (false);
-
-	}
 	public void OnRestart() {
 		inputEnabled = true;
 
@@ -62,7 +65,12 @@ public class GameController : MonoBehaviour {
 	}
 
 	public void OnExit() {
-		Debug.Log ("Quit");
 		Application.Quit();
+	}
+
+	public void OnCancel() {
+		popup.SetActive (false);
+		inputEnabled = true;
+		Time.timeScale = 1;
 	}
 }
